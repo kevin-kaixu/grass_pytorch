@@ -7,12 +7,12 @@ Please refer the details to the [paper](http://kevinkaixu.net/projects/grass.htm
 
 ## Citation
 If you use this code, please cite the following paper.
-    @article {li_sig17,
-        title = {GRASS: Generative Recursive Autoencoders for Shape Structures},
-        author = {Jun Li and Kai Xu and Siddhartha Chaudhuri and Ersin Yumer and Hao Zhang and Leonidas Guibas},
-        journal = {ACM Transactions on Graphics (Proc. of SIGGRAPH 2017)},
-        volume = {36},
-        number = {4},
-        pages = {to appear},
+	@article {li_sig17,
+		title = {GRASS: Generative Recursive Autoencoders for Shape Structures},
+		author = {Jun Li and Kai Xu and Siddhartha Chaudhuri and Ersin Yumer and Hao Zhang and Leonidas Guibas},
+		journal = {ACM Transactions on Graphics (Proc. of SIGGRAPH 2017)},
+		volume = {36},
+		number = {4},
+		pages = {to appear},
         year = {2017}
     }
