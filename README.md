@@ -6,9 +6,15 @@ This is an Pytorch implementation of our paper "GRASS: Generative Recursive Auto
 Please refer the details to the [paper](http://kevinkaixu.net/projects/grass.html).
 
 ## Usage
-Training:
+**Training**
+```
+python train.py
+```
 
-Testing:
+**Testing**
+```
+python test.py
+```
 
 ## Citation
 If you use this code, please cite the following paper.
@@ -23,3 +29,6 @@ If you use this code, please cite the following paper.
 	year = {2017}
 }
 ```
+
+## Acknowledgement
+This code utilizes the pytorch tool 'torchfold' developed by...
