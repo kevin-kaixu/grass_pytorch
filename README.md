@@ -5,8 +5,14 @@ This is an Pytorch implementation of the GRASS paper (see below). The code was w
 
 Please refer the details to the [paper](http://kevinkaixu.net/projects/grass.html).
 
+## Usage
+Training:
+
+Testing:
+
 ## Citation
 If you use this code, please cite the following paper.
+```
 	@article {li_sig17,
 		title = {GRASS: Generative Recursive Autoencoders for Shape Structures},
 		author = {Jun Li and Kai Xu and Siddhartha Chaudhuri and Ersin Yumer and Hao Zhang and Leonidas Guibas},
@@ -16,3 +22,4 @@ If you use this code, please cite the following paper.
 		pages = {to appear},
         year = {2017}
     }
+```
