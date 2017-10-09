@@ -1,7 +1,7 @@
 # GRASS in Pytorch
 Implementation of GRASS with pytorch
 
-This is an Pytorch implementation of our paper "GRASS: Generative Recursive Autoencoders for Shape Structures". The code was written by [Chenyang Zhu](http://www.sfu.ca/~cza68/) from Simon Fraser University and is being improved and maintained here in this repository.
+This is an Pytorch implementation of the paper "GRASS: Generative Recursive Autoencoders for Shape Structures". The code was originally written by [Chenyang Zhu](http://www.sfu.ca/~cza68/) from Simon Fraser University and is being improved and maintained here in this repository.
 
 Please refer the details to the [paper](http://kevinkaixu.net/projects/grass.html).
 
