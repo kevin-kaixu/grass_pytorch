@@ -25,7 +25,7 @@ If you use this code, please cite the following paper.
 	journal = {ACM Transactions on Graphics (Proc. of SIGGRAPH 2017)},
 	volume = {36},
 	number = {4},
-	pages = {to appear},
+	pages = {Article No. 52},
 	year = {2017}
 }
 ```
