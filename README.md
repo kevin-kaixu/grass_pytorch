@@ -8,6 +8,7 @@ Note that the current version implements only the Varational Auto-Encoder (VAE) 
 
 grass_pytorch depends on torchfold which is a pytorch tool developed by [Illia Polosukhin](https://github.com/ilblackdragon). It is used for dynamic batching the computations in a dynamic computation graph. Download and install [pytorch-tools](https://github.com/nearai/pytorch-tools):
 ```
+git clone https://github.com/nearai/pytorch-tools.git
 python setup.py install
 ```
 
