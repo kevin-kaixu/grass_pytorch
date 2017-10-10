@@ -7,7 +7,7 @@ Please refer the details to the [paper](http://kevinkaixu.net/projects/grass.htm
 
 ## Usage
 **Dependancy**
-grass_pytorch depends on torchfold which is a [pytorch tool](https://github.com/nearai/pytorch-tools) developed by [Illia Polosukhin](https://github.com/ilblackdragon). Download and install pytorch_tool:
+grass_pytorch depends on torchfold which is a pytorch tool developed by [Illia Polosukhin](https://github.com/ilblackdragon). It is used for dynamic batching the computations in a dynamic computation graph. Download and install [pytorch-tools](https://github.com/nearai/pytorch-tools):
 ```
 python setup.py install
 ```
