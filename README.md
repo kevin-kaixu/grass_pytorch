@@ -6,6 +6,12 @@ This is an Pytorch implementation of the paper "GRASS: Generative Recursive Auto
 Please refer the details to the [paper](http://kevinkaixu.net/projects/grass.html).
 
 ## Usage
+**Dependancy**
+grass_pytorch depends on torchfold which is a [pytorch tool](https://github.com/nearai/pytorch-tools) developed by [Illia Polosukhin](https://github.com/ilblackdragon). Download and install pytorch_tool:
+```
+python setup.py install
+```
+
 **Training**
 ```
 python train.py
