@@ -79,10 +79,10 @@ class GRASSEncoder(nn.Module):
 
     def __init__(self, config):
         super(GRASSEncoder, self).__init__()
-        self.boxEncoder = BoxEncoder(boxSize = config.boxSize, featureSize = config.featureSize)
-        self.adjEncoder = AdjEncoder(featureSize = config.featureSize, hiddenSize = config.hiddenSize)
-        self.symEncoder = SymEncoder(featureSize = config.featureSize, symmetrySize = config.symmetrySize, hiddenSize = config.hiddenSize)
-        self.sampler = Sampler(featureSize = config.featureSize, hiddenSize = config.hiddenSize)
+        self.boxEncoder = BoxEncoder(boxSize = config.box_code_size, featureSize = config.feature_size)
+        self.adjEncoder = AdjEncoder(featureSize = config.feature_size, hiddenSize = config.hidden_size)
+        self.symEncoder = SymEncoder(featureSize = config.feature_size, symmetrySize = config.symmetry_size, hiddenSize = config.hidden_size)
+        self.sampler = Sampler(featureSize = config.feature_size, hiddenSize = config.hidden_size)
 
     def leafNode(self, box):
         return self.boxEncoder(box)
@@ -197,11 +197,11 @@ class BoxDecoder(nn.Module):
 class GRASSDecoder(nn.Module):
     def __init__(self, config):
         super(GRASSDecoder, self).__init__()
-        self.boxDecoder = BoxDecoder(boxSize = config.boxSize, featureSize = config.featureSize)
-        self.adjDecoder = AdjDecoder(featureSize = config.featureSize, hiddenSize = config.hiddenSize)
-        self.symDecoder = SymDecoder(featureSize = config.featureSize, symmetrySize = config.symmetrySize, hiddenSize = config.hiddenSize)
-        self.desampler = Desampler(featureSize = config.featureSize, hiddenSize = config.hiddenSize)
-        self.nodeClassifier = NodeClassifier(featureSize = config.featureSize, hiddenSize = config.hiddenSize)
+        self.boxDecoder = BoxDecoder(boxSize = config.box_code_size, featureSize = config.feature_size)
+        self.adjDecoder = AdjDecoder(featureSize = config.feature_size, hiddenSize = config.hidden_size)
+        self.symDecoder = SymDecoder(featureSize = config.feature_size, symmetrySize = config.symmetry_size, hiddenSize = config.hidden_size)
+        self.desampler = Desampler(featureSize = config.feature_size, hiddenSize = config.hidden_size)
+        self.nodeClassifier = NodeClassifier(featureSize = config.feature_size, hiddenSize = config.hidden_size)
         self.mseLoss = nn.MSELoss()
 
     def leafNode(self, feature):
@@ -217,12 +217,10 @@ class GRASSDecoder(nn.Module):
         return self.desampler(feature)
 
     def mseBoxLossLayer(self, f1, f2):
-        f2 = Variable(f2).cuda()
         loss = ((f1.add(-f2))**2).sum(1).mul(0.4)
         return loss
 
     def mseSymLossLayer(self, f1, f2):
-        f2 = Variable(f2).cuda()
         loss = ((f1.add(-f2))**2).sum(1).mul(0.5)
         return loss
 
@@ -231,7 +229,6 @@ class GRASSDecoder(nn.Module):
 
     def classLossLayer(self, f1, f2):
         f = self.nodeClassifier(f1)
-        f2 = Variable(f2).cuda()
         return torch.log(f).mul(f2).sum(1).mul(-0.2)
 
     def classLayer(self, f):

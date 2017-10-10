@@ -1,10 +1,11 @@
 import time
-
+import os
+from time import gmtime, strftime
 import torch
 from torch import nn
 from torch.autograd import Variable
 import torch.utils.data
-import torchfold
+from torchfoldext import FoldExt
 import util
 
 from grassdata import GRASSDataset
@@ -13,19 +14,29 @@ from grassmodel import GRASSDecoder
 import grassmodel
 
 
-def class_collate(batch):
-    return batch
-
 config = util.get_args()
+
+config.cuda = config.cuda and torch.cuda.is_available()
+if config.gpu<0 and config.cuda:
+    config.gpu = 0
+torch.cuda.set_device(config.gpu)
+if config.cuda:
+    print("Using CUDA on GPU ", config.gpu)
+else:
+    print("Not using CUDA.")
+
 encoder = GRASSEncoder(config)
 decoder = GRASSDecoder(config)
-encoder.cuda()
-decoder.cuda()
+if config.cuda:
+    encoder.cuda()
+    decoder.cuda()
 
 
 print("Loading data ...... ", end='', flush=True)
 grass_data = GRASSDataset('./data')
-train_iter = torch.utils.data.DataLoader(grass_data, batch_size=123, shuffle=True, collate_fn=class_collate)
+def my_collate(batch):
+    return batch
+train_iter = torch.utils.data.DataLoader(grass_data, batch_size=123, shuffle=True, collate_fn=my_collate)
 print("DONE")
 
 encoder_opt = torch.optim.Adam(encoder.parameters(), lr=1e-3)
@@ -34,56 +45,63 @@ decoder_opt = torch.optim.Adam(decoder.parameters(), lr=1e-3)
 print("Start training ...... ")
 
 start = time.time()
-best_dev_acc = -1
-header = '  Time Epoch Iteration Progress    (%Epoch)   ReconLoss   KLDivLoss   TotalLoss'
-log_template = ' '.join('{:>6.0f},{:>5.0f},{:>9.0f},{:>5.0f}/{:<5.0f} {:>7.0f}%,{:>10.6f},{:>8.6f},{:>8.6f}'.split(','))
-#os.makedirs(args.save_path, exist_ok=True)
-print(header)
+os.makedirs(config.save_path, exist_ok=True)
+snapshot_folder = os.path.join(config.save_path, 'snapshots_'+strftime("%Y-%m-%d_%H-%M-%S", gmtime()))
+os.makedirs(snapshot_folder, exist_ok=True)
+header = '     Time    Epoch     Iteration    Progress(%)  ReconLoss  KLDivLoss  TotalLoss'
+log_template = ' '.join('{:>9s},{:>5.0f}/{:<5.0f},{:>5.0f}/{:<5.0f},{:>9.1f}%,{:>11.2f},{:>10.2f},{:>10.2f}'.split(','))
 
-for epoch in range(500):
-    
-#    if epoch % 100 == 0 and epoch != 0 :
-#        torch.save(encoder, 'VAEencoder.pkl')
-#       torch.save(decoder, 'VAEdecoder.pkl')
 
-    n_total = train_loss = 0
-
+for epoch in range(config.epochs):
+    print(header)
     for batch_idx, batch in enumerate(train_iter):
         # Initialize torchfold for *encoding*
-        fold = torchfold.Fold(cuda=True, variable=False)
+        enc_fold = FoldExt(cuda=config.cuda)
         enc_fold_nodes = []     # list of fold nodes for encoding
         # Collect computation nodes recursively from encoding process
         for example in batch:
-            enc_fold_nodes.append(grassmodel.encode_structure_fold(fold, example))
+            enc_fold_nodes.append(grassmodel.encode_structure_fold(enc_fold, example))
         # Apply the computations on the encoder model
-        enc_fold_nodes = fold.apply(encoder, [enc_fold_nodes])
+        enc_fold_nodes = enc_fold.apply(encoder, [enc_fold_nodes])
         # Split into fold nodes per example
         enc_fold_nodes = torch.split(enc_fold_nodes[0], 1, 0)
         # Initialize torchfold for *decoding*
-        fold = torchfold.Fold(cuda=True, variable=True)
+        dec_fold = FoldExt(cuda=config.cuda)
+        # Collect computation nodes recursively from decoding process
         dec_fold_nodes = []
         kld_fold_nodes = []
         for example, fnode in zip(batch, enc_fold_nodes):
             root_code, kl_div = torch.chunk(fnode, 2, 1)
-            dec_fold_nodes.append(grassmodel.decode_structure_fold(fold, root_code, example))
+            dec_fold_nodes.append(grassmodel.decode_structure_fold(dec_fold, root_code, example))
             kld_fold_nodes.append(kl_div)
         # Apply the computations on the decoder model
-        total_loss = fold.apply(decoder, [dec_fold_nodes, kld_fold_nodes])
-            # the first 80 dims of total_loss is for reconstruction and the second 80 for KL divergence
+        total_loss = dec_fold.apply(decoder, [dec_fold_nodes, kld_fold_nodes])
+            # the first dim of total_loss is for reconstruction and the second for KL divergence
         recon_loss = total_loss[0].sum() / len(batch)               # avg. reconstruction loss per example
         kldiv_loss = total_loss[1].sum().mul(-0.05) / len(batch)    # avg. KL divergence loss per example
         total_loss = recon_loss + kldiv_loss
-
+        # Do parameter optimization
         encoder_opt.zero_grad()
         decoder_opt.zero_grad()
         total_loss.backward()
         encoder_opt.step()
         decoder_opt.step()
+        # Report statistics
+        if batch_idx % config.log_every == 0:
+            print(log_template.format(strftime("%H:%M:%S",time.gmtime(time.time()-start)),
+                epoch, config.epochs, 1+batch_idx, len(train_iter),
+                100. * (1+batch_idx+len(train_iter)*epoch) / (len(train_iter)*config.epochs),
+                recon_loss.data[0], kldiv_loss.data[0], total_loss.data[0]))
 
-        #if batch_idx % 1 == 0 :
-            #print("reconstruction_error: %s; KLD_error: %s" % (str(err_re.data[0]), str(err_kld.data[0])))
-        print(log_template.format(time.time()-start, epoch, batch_idx, 1+batch_idx, len(train_iter),
-                100.*(1+batch_idx)/len(train_iter), recon_loss.data[0], kldiv_loss.data[0], total_loss.data[0]))
+    # Save snapshots of the models being trained
+    if config.save_snapshot and epoch % config.save_every == 0 :
+        print("Saving snapshots of the models ...... ", end='', flush=True)
+        torch.save(encoder, snapshot_folder+'//vae_encoder_model_epoch_{}_loss_{:.2f}.pkl'.format(epoch,total_loss.data[0]))
+        torch.save(decoder, snapshot_folder+'//vae_decoder_model_epoch_{}_loss_{:.2f}.pkl'.format(epoch,total_loss.data[0]))
+        print("DONE")
 
-torch.save(encoder, 'VAEencoder.pkl')
-torch.save(decoder, 'VAEdecoder.pkl')
+# Save the final models
+print("Saving final models ...... ", end='', flush=True)
+torch.save(encoder, config.save_path+'//vae_encoder_model.pkl')
+torch.save(decoder, config.save_path+'//vae_decoder_model.pkl')
+print("DONE")
