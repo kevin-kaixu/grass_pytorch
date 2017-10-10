@@ -1,9 +1,7 @@
 # GRASS in Pytorch
-Implementation of GRASS with pytorch
+This is an Pytorch implementation of the paper "[GRASS: Generative Recursive Autoencoders for Shape Structures](http://kevinkaixu.net/projects/grass.html)". The paper is about learning a generative model for 3D shape structures by structural encoding and decoding with Recursive Neural Networks. This code was originally written by [Chenyang Zhu](http://www.sfu.ca/~cza68/) from Simon Fraser University and is being improved and maintained here in this repository.
 
-This is an Pytorch implementation of the paper "GRASS: Generative Recursive Autoencoders for Shape Structures". The code was originally written by [Chenyang Zhu](http://www.sfu.ca/~cza68/) from Simon Fraser University and is being improved and maintained here in this repository.
-
-Please refer the details to the [paper](http://kevinkaixu.net/projects/grass.html).
+Note that the current version implements only the Varational Auto-Encoder (VAE) part of the generative model. The implementation of the Generarive Adverserial Nets (GAN) part is still on-going. But this model can already generate novel 3D shape structures from sampled random noises. With GAN part, it is expected to generate more diverse structures.
 
 ## Usage
 **Dependancy**
