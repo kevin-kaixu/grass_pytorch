@@ -37,4 +37,4 @@ If you use this code, please cite the following paper.
 ```
 
 ## Acknowledgement
-This code utilizes the pytorch tool 'torchfold' developed by...
+This code uses the 'torchfold' in pytorch-tools developed by [Illia Polosukhin](https://github.com/ilblackdragon).
