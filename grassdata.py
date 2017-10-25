@@ -1,42 +1,48 @@
 import torch
 from torch.utils import data
 from scipy.io import loadmat
+from enum import Enum
 
 class Tree(object):
+    class NodeType(Enum):
+        BOX = 0  # box node
+        ADJ = 1  # adjacency (adjacent part assembly) node
+        SYM = 2  # symmetry (symmetric part grouping) node
+
     class Node(object):
-        def __init__(self, leaf=None, left=None, right=None, nType=None, sym=None):
-            self.box = leaf
-            self.sym = sym
-            self.left = left
-            self.right = right
-            self.nType = nType
-            if nType == 0:
-                self.label = torch.FloatTensor([1,0,0]).unsqueeze(0)
-            if nType == 1:
-                self.label = torch.FloatTensor([0,1,0]).unsqueeze(0)
-            if nType == 2:
-                self.label = torch.FloatTensor([0,0,1]).unsqueeze(0)
+        def __init__(self, box=None, left=None, right=None, node_type=None, sym=None):
+            self.box = box          # box feature vector for a leaf node
+            self.sym = sym          # symmetry parameter vector for a symmetry node
+            self.left = left        # left child for ADJ or SYM (a symmeter generator)
+            self.right = right      # right child
+            self.node_type = node_type
+            self.label = torch.LongTensor([self.node_type.value])
 
         def is_leaf(self):
-            return self.box is not None
+            return self.node_type == Tree.NodeType.BOX and self.box is not None
+
+        def is_adj(self):
+            return self.node_type == Tree.NodeType.ADJ
+
+        def is_sym(self):
+            return self.node_type == Tree.NodeType.SYM
 
     def __init__(self, boxes, ops, syms):
-        buffer = [b for b in torch.split(boxes, 1, 0)]
-        sympara = [s for s in torch.split(syms, 1, 0)]
-        opnum = ops.size()[1]
+        box_list = [b for b in torch.split(boxes, 1, 0)]
+        sym_param = [s for s in torch.split(syms, 1, 0)]
+        box_list.reverse()
+        sym_param.reverse()
         queue = []
-        buffer.reverse()
-        sympara.reverse()
-        for i in range(opnum):
-            if ops[0, i] == 0:
-                queue.append(Tree.Node(leaf=buffer.pop(), nType=0))
-            if ops[0, i] == 1:
-                n_left = queue.pop()
-                n_right = queue.pop()
-                queue.append(Tree.Node(left=n_left, right=n_right, nType=1))
-            if ops[0, i] == 2:
-                n_left = queue.pop()
-                queue.append(Tree.Node(left=n_left, sym=sympara.pop(), nType=2))
+        for id in range(ops.size()[1]):
+            if ops[0, id] == Tree.NodeType.BOX.value:
+                queue.append(Tree.Node(box=box_list.pop(), node_type=Tree.NodeType.BOX))
+            elif ops[0, id] == Tree.NodeType.ADJ.value:
+                left_node = queue.pop()
+                right_node = queue.pop()
+                queue.append(Tree.Node(left=left_node, right=right_node, node_type=Tree.NodeType.ADJ))
+            elif ops[0, id] == Tree.NodeType.SYM.value:
+                node = queue.pop()
+                queue.append(Tree.Node(left=node, sym=sym_param.pop(), node_type=Tree.NodeType.SYM))
         assert len(queue) == 1
         self.root = queue[0]
 

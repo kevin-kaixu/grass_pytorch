@@ -1,14 +1,14 @@
 import torch
 from torch import nn
 from torch.autograd import Variable
-import model
-import torchfold
-from draw3dOBB import showGenshape
+import grassmodel
+from draw3dobb import showGenshape
 
-encoder = torch.load('VAEencoder.pkl')
-decoder = torch.load('VAEdecoder.pkl')
+
+decoder = torch.load('./models/vae_decoder_model.pkl')
+
 
 for i in range(10):
-    test = Variable(torch.rand(1,80).mul(2).add(-torch.ones(1,80))).cuda()
-    boxes = model.decode_structure(decoder, test)
+    root_code = Variable(torch.randn(1,80)).cuda()
+    boxes = grassmodel.decode_structure(decoder, root_code)
     showGenshape(torch.cat(boxes,0).data.cpu().numpy())

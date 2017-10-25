@@ -7,7 +7,24 @@ from torch.autograd import Variable
 class FoldExt(Fold):
 
     def __init__(self, volatile=False, cuda=False):
-        Fold.__init__(self,volatile, cuda)
+        Fold.__init__(self, volatile, cuda)
+
+
+    def add(self, op, *args):
+        """Add op to the fold."""
+        self.total_nodes += 1
+        if not all([isinstance(arg, (
+            Fold.Node, int, torch.Tensor, torch.FloatTensor, torch.LongTensor, Variable)) for arg in args]):
+            raise ValueError(
+                "All args should be Tensor, Variable, int or Node, got: %s" % str(args))
+        if args not in self.cached_nodes[op]:
+            step = max([0] + [arg.step + 1 for arg in args
+                              if isinstance(arg, Fold.Node)])
+            node = Fold.Node(op, step, len(self.steps[step][op]), *args)
+            self.steps[step][op].append(args)
+            self.cached_nodes[op][args] = node
+        return self.cached_nodes[op][args]
+
 
     def _batch_args(self, arg_lists, values):
         res = []
@@ -29,13 +46,13 @@ class FoldExt(Fold):
                 #   We make Fold handle float tensor
                 try:
                     if (isinstance(arg[0], Variable)):
-                        var = torch.cat(arg,0)
+                        var = torch.cat(arg, 0)
                     else:
-                        var = Variable(torch.cat(arg,0), volatile=self.volatile)
+                        var = Variable(torch.cat(arg, 0), volatile=self.volatile)
                     if self._cuda:
                         var = var.cuda()
                     res.append(var)
                 except:
-                    print("Constructing LongTensor from %s" % str(arg))
+                    print("Constructing float tensor from %s" % str(arg))
                     raise
         return res
