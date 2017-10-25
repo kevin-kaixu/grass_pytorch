@@ -36,7 +36,7 @@ Arguments:
 ```
 python test.py
 ```
-This will sample a random noise vector of the same size as the root code. This random noise will be decoded into a tree structure of boxes and displayed using the utility functions in ```draw3dobb.py```.
+This will sample a random noise vector of the same size as the root code. This random noise will be decoded into a tree structure of boxes and displayed using the utility functions in [draw3dobb.py](https://github.com/kevin-kaixu/grass_pytorch/blob/master/draw3dOBB.py) provided in this project.
 
 ## Citation
 If you use this code, please cite the following paper.
