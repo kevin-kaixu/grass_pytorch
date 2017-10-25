@@ -18,11 +18,11 @@ python train.py
 ```
 Arguments:
 ```
---epochs (number of epochs; default=300)
---batch_size (batch size; default=123 (the size of the provided training dataset is a multiple of 123))
---show_log_every (show training log for every X frames; default=3)
---save_log (save training log files)
---save_log_every (save training log for every X frames; default=3)
+'--epochs' (number of epochs; default=300)
+'--batch_size' (batch size; default=123 (the size of the provided training dataset is a multiple of 123))
+'--show_log_every' (show training log for every X frames; default=3)
+'--save_log' (save training log files)
+'--save_log_every' (save training log for every X frames; default=3)
 '--save_snapshot' (save snapshots of trained model)
 '--save_snapshot_every' (save training log for every X frames; default=5)
 '--no_plot' (don't show plots of losses)
