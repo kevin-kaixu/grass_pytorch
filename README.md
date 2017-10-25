@@ -16,11 +16,27 @@ python setup.py install
 ```
 python train.py
 ```
+Arguments:
+```
+--epochs (number of epochs; default=300)
+--batch_size (batch size; default=123 (the size of the provided training dataset is a multiple of 123))
+--show_log_every (show training log for every X frames; default=3)
+--save_log (save training log files)
+--save_log_every (save training log for every X frames; default=3)
+'--save_snapshot' (save snapshots of trained model)
+'--save_snapshot_every' (save training log for every X frames; default=5)
+'--no_plot' (don't show plots of losses)
+'--no_cuda' (don't use cuda)
+'--gpu' (device id of GPU to run cuda)
+'--data_path' (dataset path, default='data')
+'--save_path' (trained model path, default='models')
+```
 
 **Testing**
 ```
 python test.py
 ```
+This will sample a random noise vector of the same size as the root code. This random noise will be decoded into a tree structure of boxes and displayed using the utility functions in ```draw3dobb.py```.
 
 ## Citation
 If you use this code, please cite the following paper.
