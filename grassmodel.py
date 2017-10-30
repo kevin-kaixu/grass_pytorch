@@ -76,39 +76,39 @@ class GRASSEncoder(nn.Module):
 
     def __init__(self, config):
         super(GRASSEncoder, self).__init__()
-        self.boxEncoder = BoxEncoder(input_size = config.box_code_size, feature_size = config.feature_size)
-        self.adjEncoder = AdjEncoder(feature_size = config.feature_size, hidden_size = config.hidden_size)
-        self.symEncoder = SymEncoder(feature_size = config.feature_size, symmetry_size = config.symmetry_size, hidden_size = config.hidden_size)
-        self.sampler = Sampler(feature_size = config.feature_size, hidden_size = config.hidden_size)
+        self.box_encoder = BoxEncoder(input_size = config.box_code_size, feature_size = config.feature_size)
+        self.adj_encoder = AdjEncoder(feature_size = config.feature_size, hidden_size = config.hidden_size)
+        self.sym_encoder = SymEncoder(feature_size = config.feature_size, symmetry_size = config.symmetry_size, hidden_size = config.hidden_size)
+        self.sample_encoder = Sampler(feature_size = config.feature_size, hidden_size = config.hidden_size)
 
-    def leafNode(self, box):
-        return self.boxEncoder(box)
+    def boxEncoder(self, box):
+        return self.box_encoder(box)
 
-    def adjNode(self, left, right):
-        return self.adjEncoder(left, right)
+    def adjEncoder(self, left, right):
+        return self.adj_encoder(left, right)
 
-    def symNode(self, feature, sym):
-        return self.symEncoder(feature, sym)
+    def symEncoder(self, feature, sym):
+        return self.sym_encoder(feature, sym)
 
-    def sampleLayer(self, feature):
-        return self.sampler(feature)
+    def sampleEncoder(self, feature):
+        return self.sample_encoder(feature)
 
 def encode_structure_fold(fold, tree):
 
     def encode_node(node):
         if node.is_leaf():
-            return fold.add('leafNode', node.box)
+            return fold.add('boxEncoder', node.box)
         elif node.is_adj():
             left = encode_node(node.left)
             right = encode_node(node.right)
-            return fold.add('adjNode', left, right)
+            return fold.add('adjEncoder', left, right)
         elif node.is_sym():
             feature = encode_node(node.left)
             sym = node.sym
-            return fold.add('symNode', feature, sym)
+            return fold.add('symEncoder', feature, sym)
 
     encoding = encode_node(tree.root)
-    return fold.add('sampleLayer', encoding)
+    return fold.add('sampleEncoder', encoding)
 
 #########################################################################################
 ## Decoder
@@ -262,7 +262,7 @@ def decode_structure_fold(fold, feature, tree):
 
 
 #########################################################################################
-## Functions for model testing
+## Functions for model testing: Decode a root code into a tree structure of boxes
 #########################################################################################
 
 def vrrotvec2mat(rotvector):
